@@ -1,0 +1,19 @@
+name: Workflow
+
+on: push
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Lint
+        run: yarn lint
+      - name: Test
+        run: yarn test
+        env:
+          CI: true
+      - name: Deploy to GitHub pages
+        run: yarn deploy -t ${{ secrets.TOKEN }}
