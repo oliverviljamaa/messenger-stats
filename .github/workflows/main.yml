@@ -7,8 +7,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Log environment variables
-        run: echo $GITHUB_WORKFLOW $GITHUB_REF $GITHUB_REPOSITORY $GITHUB_RUN_ID
       - name: Install dependencies
         run: yarn install --frozen-lockfile
       - name: Lint
@@ -21,4 +19,4 @@ jobs:
         run: |
           git config user.email "oliver.viljamaa@gmail.com"
           git config user.name "Oliver Viljamaa"
-          yarn deploy -t ${{ secrets.TOKEN }} --verbose
+          yarn deploy -t ${{ secrets.TOKEN }}
