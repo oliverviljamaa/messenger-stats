@@ -18,4 +18,4 @@ jobs:
         env:
           CI: true
       - name: Deploy to GitHub pages
-        run: yarn deploy -t ${{ secrets.GITHUB_TOKEN }} --verbose
+        run: yarn deploy -t ${{ secrets.GITHUB_TOKEN }}
