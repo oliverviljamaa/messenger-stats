@@ -17,6 +17,4 @@ jobs:
           CI: true
       - name: Deploy to GitHub pages
         run: |
-          git config user.email "oliver.viljamaa@gmail.com"
-          git config user.name "Oliver Viljamaa"
           yarn deploy -t ${{ secrets.TOKEN }}
