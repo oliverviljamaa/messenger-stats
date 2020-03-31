@@ -21,4 +21,4 @@ jobs:
         run: |
           git config user.email "oliver.viljamaa@gmail.com"
           git config user.name "Oliver Viljamaa"
-          yarn deploy -t ${{ secrets.GITHUB_TOKEN }}
+          yarn deploy -t ${{ secrets.GITHUB_TOKEN }} --verbose
