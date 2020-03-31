@@ -16,11 +16,13 @@
     "typescript": "~3.7.2"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
+    "start": "EXTEND_ESLINT=true react-scripts start",
+    "build": "EXTEND_ESLINT=true react-scripts build",
     "test": "react-scripts test",
     "lint": "eslint '**/*.{js,jsx,ts,tsx}'",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "yarn build",
+    "deploy": "deploy-to-github-pages -d build"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -46,6 +48,7 @@
   },
   "devDependencies": {
     "@transferwise/eslint-config": "5.0.3",
+    "deploy-to-github-pages": "^1.0.0-beta.3",
     "eslint": "^6.5.1",
     "eslint-plugin-fp": "^2.3.0",
     "eslint-plugin-import": "^2.18.2",
@@ -57,5 +60,6 @@
     "husky": "^4.2.3",
     "lint-staged": "^10.0.8",
     "prettier": "^1.18.2"
-  }
+  },
+  "homepage": "."
 }
