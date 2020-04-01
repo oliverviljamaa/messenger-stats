@@ -16,6 +16,7 @@ module.exports = {
       'properties': 'never',
       'ignoreDestructuring': true,
     }],
+    '@typescript-eslint/no-unused-vars': 'error',
     'jest/prefer-expect-assertions': 0, // only useful in error tests
     'react/prop-types': 0, // TypeScript does it for us
     'jest/lowercase-name': 0, // allow component names to be capitalised

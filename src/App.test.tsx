@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  render,
-  fireEvent,
-  waitFor,
-  waitForElementToBeRemoved,
-  GetByText,
-} from '@testing-library/react';
+import { render, fireEvent, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
 import App from './App';
 
 import { FileContent } from './dataUtils';
