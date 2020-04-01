@@ -23,6 +23,8 @@ const App: FC = () => {
 
       <Upload onComplete={setData} style={{ marginRight: 16 }} />
 
+      {/* TODO: Add instructions drawer for how to download data and what to upload */}
+
       <TimeUnitRadio
         selected={selectedTimeUnit}
         onSelect={setSelectedTimeUnit}
