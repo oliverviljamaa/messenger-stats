@@ -1,5 +1,11 @@
 import React from 'react';
-import { render, fireEvent, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
+import {
+  render,
+  fireEvent,
+  waitFor,
+  waitForElementToBeRemoved,
+  GetByText,
+} from '@testing-library/react';
 import App from './App';
 
 import { FileContent } from './dataUtils';
@@ -15,28 +21,14 @@ describe('App', () => {
         {
           messages: [
             {
-              sender_name: 'Rick Sanchez',
-              content: 'Hey',
-              timestamp_ms: timestamp('2016/02/14 21:00:01'),
-            },
-            {
               sender_name: 'Morty Smith',
               content: 'Oh boy',
-              timestamp_ms: timestamp('2016/02/14 21:00:00'),
+              timestamp_ms: timestamp('2020/01/01 00:00:00'),
             },
             {
               sender_name: 'Morty Smith',
               content: 'Oh jeez',
-              timestamp_ms: timestamp('2016/02/14 02:34:56'),
-            },
-          ],
-        },
-        {
-          messages: [
-            {
-              sender_name: 'Morty Smith',
-              content: 'Oh jeez',
-              timestamp_ms: timestamp('2015/10/03 14:15:10'),
+              timestamp_ms: timestamp('2019/12/31 23:59:59'),
             },
           ],
         },
@@ -45,12 +37,17 @@ describe('App', () => {
             {
               sender_name: 'Rick Sanchez',
               content: 'Hey',
-              timestamp_ms: timestamp('2015/10/02 13:15:10'),
+              timestamp_ms: timestamp('2019/11/01 02:25:12'),
             },
             {
               sender_name: 'Mr. Meeseeks',
               content: 'Look at me',
-              timestamp_ms: timestamp('2014/12/31 23:59:59'),
+              timestamp_ms: timestamp('2019/11/01 02:25:12'),
+            },
+            {
+              sender_name: 'Morty Smith',
+              content: 'Oh jeez',
+              timestamp_ms: timestamp('2019/10/31 16:23:42'),
             },
           ],
         },
@@ -64,33 +61,66 @@ describe('App', () => {
 
     await waitForElementToBeRemoved(() => getByText('No Data'));
 
-    expect(getByText('Feb 2016')).toBeInTheDocument();
-    expect(getByText('Oct 2015')).toBeInTheDocument();
-    expect(getByText('Dec 2014')).toBeInTheDocument();
+    expect(getByText('Oct 2019')).toBeInTheDocument();
+    expect(getByText('Nov 2019')).toBeInTheDocument();
+    expect(getByText('Dec 2019')).toBeInTheDocument();
+    expect(getByText('Jan 2020')).toBeInTheDocument();
 
     fireEvent.click(getByText('DAY'));
 
     await waitFor(() => {
-      expect(getByText('31/12/2014')).toBeInTheDocument();
-      expect(getByText('02/10/2015')).toBeInTheDocument();
-      expect(getByText('03/10/2015')).toBeInTheDocument();
-      expect(getByText('14/02/2016')).toBeInTheDocument();
+      [
+        '31/10/2019',
+        '03/11/2019',
+        '06/11/2019',
+        '09/11/2019',
+        '12/11/2019',
+        '15/11/2019',
+        '18/11/2019',
+        '21/11/2019',
+        '24/11/2019',
+        '27/11/2019',
+        '30/11/2019',
+        '03/12/2019',
+        '06/12/2019',
+        '09/12/2019',
+        '12/12/2019',
+        '15/12/2019',
+        '18/12/2019',
+        '21/12/2019',
+        '24/12/2019',
+        '27/12/2019',
+        '30/12/2019',
+      ].forEach(text => {
+        expect(getByText(text)).toBeInTheDocument();
+      });
     });
 
     fireEvent.click(getByText('WEEK'));
 
     await waitFor(() => {
-      expect(getByText('29/12/2014 week')).toBeInTheDocument();
-      expect(getByText('28/09/2015 week')).toBeInTheDocument();
-      expect(getByText('08/02/2016 week')).toBeInTheDocument();
+      [
+        '28/10/2019 week',
+        '04/11/2019 week',
+        '11/11/2019 week',
+        '18/11/2019 week',
+        '25/11/2019 week',
+        '02/12/2019 week',
+        '09/12/2019 week',
+        '16/12/2019 week',
+        '23/12/2019 week',
+        '30/12/2019 week',
+      ].forEach(text => {
+        expect(getByText(text)).toBeInTheDocument();
+      });
     });
 
     fireEvent.click(getByText('YEAR'));
 
     await waitFor(() => {
-      expect(getByText('2014')).toBeInTheDocument();
-      expect(getByText('2015')).toBeInTheDocument();
-      expect(getByText('2016')).toBeInTheDocument();
+      ['2019', '2020'].forEach(text => {
+        expect(getByText(text)).toBeInTheDocument();
+      });
     });
   });
 

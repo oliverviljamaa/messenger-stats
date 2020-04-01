@@ -1,6 +1,16 @@
 import { decode } from 'utf8';
 import { groupBy, sortBy, orderBy, mapValues } from 'lodash';
-import { format, startOfDay, startOfWeek, startOfMonth, startOfYear } from 'date-fns';
+import {
+  format,
+  startOfDay,
+  startOfWeek,
+  startOfMonth,
+  startOfYear,
+  eachDayOfInterval,
+  eachWeekOfInterval,
+  eachMonthOfInterval,
+  eachYearOfInterval,
+} from 'date-fns';
 
 import { TimeUnit, Data, DataForTimeUnit, Message } from '../models';
 
@@ -72,44 +82,82 @@ function extractMessages({ messages }: FileContent): Message[] {
   }));
 }
 
-// TODO: Add items for time units without messages
 function convertMessagesToDataForTimeUnit(
   messages: Message[],
   timeUnit: TimeUnit,
 ): DataForTimeUnit[] {
   const messagesByOldestFirst = sortBy(messages, 'time');
-  const messagesGroupedByTime = groupMessagesByTime(messagesByOldestFirst, timeUnit);
   const sendersByMostMessagesFirst = getSendersByMostMessagesFirst(messagesByOldestFirst);
 
-  return Object.entries(messagesGroupedByTime).map(([time, messagesForThatTime]) => {
-    const numberOfMessagesBySender = getNumberOfMessagesBySender(messagesForThatTime);
+  return getTimesWithMessages(messagesByOldestFirst, timeUnit).map(
+    ({ time, messages: messagesForThatTime }) => {
+      const numberOfMessagesBySender = getNumberOfMessagesBySender(messagesForThatTime);
 
-    return {
-      id: formatTime(Number(time), timeUnit),
-      ...sendersByMostMessagesFirst.reduce(
-        (result, sender) => ({
-          ...result,
-          [sender]: numberOfMessagesBySender[sender] || 0,
-        }),
-        {},
-      ),
-    };
-  });
+      return {
+        id: formatTime(Number(time), timeUnit),
+        ...sendersByMostMessagesFirst.reduce(
+          (result, sender) => ({
+            ...result,
+            [sender]: numberOfMessagesBySender[sender] || 0,
+          }),
+          {},
+        ),
+      };
+    },
+  );
 }
 
 function getNumberOfMessagesBySender(messages: Message[]): Record<Message['sender'], number> {
   return mapValues(groupMessagesBySender(messages), messagesBySender => messagesBySender.length);
 }
 
+function getTimesWithMessages(
+  messages: Message[],
+  unit: TimeUnit,
+): { time: number; messages: Message[] }[] {
+  const messagesGroupedByTime = groupMessagesByTime(messages, unit);
+  const getInterval = getIntervalFn(messages, unit);
+
+  return getInterval().map(date => ({
+    time: date.getTime(),
+    messages: messagesGroupedByTime[date.getTime()] || [],
+  }));
+}
+
 function groupMessagesByTime(messages: Message[], unit: TimeUnit): Record<string, Message[]> {
-  const startOf: Record<TimeUnit, (time: number) => number> = {
+  return groupBy(messages, ({ time }) => getStartTimeFn(unit)(time));
+}
+
+function getStartTimeFn(unit: TimeUnit): (time: number) => number {
+  const fns: Record<TimeUnit, (time: number) => number> = {
     DAY: time => startOfDay(time).getTime(),
     WEEK: time => startOfWeek(time, { weekStartsOn: 1 }).getTime(),
     MONTH: time => startOfMonth(time).getTime(),
     YEAR: time => startOfYear(time).getTime(),
   };
 
-  return groupBy(messages, ({ time }) => startOf[unit](time));
+  return fns[unit];
+}
+
+function getIntervalFn(messages: Message[], unit: TimeUnit): () => Date[] {
+  if (messages.length === 0) {
+    return (): Date[] => [];
+  }
+
+  const firstTime = messages[0].time;
+  const lastTime = messages[messages.length - 1].time;
+
+  const start = getStartTimeFn(unit)(firstTime);
+  const end = lastTime;
+
+  const fns: Record<TimeUnit, () => Date[]> = {
+    DAY: () => eachDayOfInterval({ start, end }),
+    WEEK: () => eachWeekOfInterval({ start, end }, { weekStartsOn: 1 }),
+    MONTH: () => eachMonthOfInterval({ start, end }),
+    YEAR: () => eachYearOfInterval({ start, end }),
+  };
+
+  return fns[unit];
 }
 
 function getSendersByMostMessagesFirst(messages: Message[]): Message['sender'][] {
