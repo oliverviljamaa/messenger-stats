@@ -6,47 +6,75 @@ import { TimeUnit, Data } from './models';
 
 import Upload from './Upload';
 import TimeUnitRadio from './TimeUnitRadio';
+import Senders from './Senders';
 import EmptyState from './EmptyState';
 import Chart from './Chart';
+import COLORS from './COLORS';
 
 const { Title } = Typography;
 
 const App: FC = () => {
   const [data, setData] = useState(emptyData);
+  const [selectedSenders, setSelectedSenders] = useState(data.senders);
   const [selectedTimeUnit, setSelectedTimeUnit] = useState(TimeUnit.MONTH);
 
-  const dataForTimeUnit = data[selectedTimeUnit];
+  const { senders, messages } = data;
+  const dataForTimeUnit = messages[selectedTimeUnit];
 
   return (
     <main style={{ padding: 32 }}>
       <Title>Messenger stats</Title>
 
-      <Upload onComplete={setData} style={{ marginRight: 16 }} />
+      <div style={{ display: 'flex' }}>
+        <div>
+          <Upload
+            onComplete={(newData): void => {
+              setSelectedSenders(newData.senders);
+              setData(newData);
+            }}
+            style={{ marginBottom: 24 }}
+          />
 
-      {/* TODO: Add instructions drawer for how to download data and what to upload */}
+          <TimeUnitRadio
+            selected={selectedTimeUnit}
+            onSelect={setSelectedTimeUnit}
+            disabled={data === emptyData}
+            disabledUnits={getTimeUnitsToDisable(data)}
+            style={{ marginBottom: 24 }}
+          />
 
-      <TimeUnitRadio
-        selected={selectedTimeUnit}
-        onSelect={setSelectedTimeUnit}
-        disabled={data === emptyData}
-        disabledUnits={getTimeUnitsToDisable(data)}
-      />
+          {senders.length > 0 && (
+            <Senders
+              senders={senders}
+              selected={selectedSenders}
+              onChange={setSelectedSenders}
+              colors={COLORS}
+            />
+          )}
+        </div>
 
-      {/* TODO: Add keyword filtering */}
+        {/* TODO: Add instructions drawer for how to download data and what to upload */}
 
-      {/* TODO: Add sender filtering, potentially with own legend */}
+        {/* TODO: Add keyword filtering */}
 
-      {/* TODO: Add chat title */}
+        {/* TODO: Add chat title */}
 
-      {/* TODO: Add loading state */}
+        {/* TODO: Add loading state */}
 
-      {data === emptyData ? <EmptyState /> : <Chart data={dataForTimeUnit} />}
+        <div style={{ flex: 1 }}>
+          {data === emptyData ? (
+            <EmptyState />
+          ) : (
+            <Chart senders={selectedSenders} data={dataForTimeUnit} colors={COLORS} />
+          )}
+        </div>
+      </div>
     </main>
   );
 };
 
 function getTimeUnitsToDisable(data: Data): TimeUnit[] {
-  return Object.values(TimeUnit).filter(unit => data[unit].length > 500);
+  return Object.values(TimeUnit).filter(unit => data.messages[unit].length > 500);
 }
 
 export default App;

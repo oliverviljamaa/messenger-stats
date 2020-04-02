@@ -74,6 +74,7 @@
     "react-app-rewired": "^2.1.5",
     "react-hot-loader": "^4.12.20",
     "react-scripts": "3.4.0",
+    "rgb-hex": "^3.0.0",
     "typescript": "~3.7.2"
   },
   "homepage": "."
