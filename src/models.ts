@@ -15,4 +15,7 @@ export enum TimeUnit {
 
 export type DataForTimeUnit = Pick<BarItemProps['data'], 'id'>;
 
-export type Data = Record<TimeUnit, DataForTimeUnit[]>;
+export type Data = {
+  senders: Message['sender'][];
+  messages: Record<TimeUnit, DataForTimeUnit[]>;
+};

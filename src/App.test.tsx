@@ -1,53 +1,53 @@
 import React from 'react';
 import { render, fireEvent, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
-import App from './App';
+import rgbHex from 'rgb-hex';
 
+import App from './App';
 import { FileContent } from './dataUtils';
 
 describe('App', () => {
+  const FILE_CONTENTS: FileContent[] = [
+    {
+      messages: [
+        {
+          sender_name: 'Rick Sanchez',
+          content: 'Burp',
+          timestamp_ms: timestamp('2020/01/01 00:00:00'),
+        },
+        {
+          sender_name: 'Morty Smith',
+          content: 'Oh jeez',
+          timestamp_ms: timestamp('2019/12/31 23:59:59'),
+        },
+      ],
+    },
+    {
+      messages: [
+        {
+          sender_name: 'Rick Sanchez',
+          content: 'Hey',
+          timestamp_ms: timestamp('2019/11/01 02:25:12'),
+        },
+        {
+          sender_name: 'Mr. Meeseeks',
+          content: 'Look at me',
+          timestamp_ms: timestamp('2019/11/01 02:25:12'),
+        },
+        {
+          sender_name: 'Morty Smith',
+          content: 'Oh jeez',
+          timestamp_ms: timestamp('2019/10/31 16:23:42'),
+        },
+      ],
+    },
+  ];
+
   it('shows empty state and on upload, replaces it with correct columns and updates on time unit change', async () => {
     mockBoundingRectSoChartWouldBeRendered();
 
     const { getByText, container } = render(<App />);
 
-    const fireUploadEvent = getFireUploadEventForContents(
-      [
-        {
-          messages: [
-            {
-              sender_name: 'Morty Smith',
-              content: 'Oh boy',
-              timestamp_ms: timestamp('2020/01/01 00:00:00'),
-            },
-            {
-              sender_name: 'Morty Smith',
-              content: 'Oh jeez',
-              timestamp_ms: timestamp('2019/12/31 23:59:59'),
-            },
-          ],
-        },
-        {
-          messages: [
-            {
-              sender_name: 'Rick Sanchez',
-              content: 'Hey',
-              timestamp_ms: timestamp('2019/11/01 02:25:12'),
-            },
-            {
-              sender_name: 'Mr. Meeseeks',
-              content: 'Look at me',
-              timestamp_ms: timestamp('2019/11/01 02:25:12'),
-            },
-            {
-              sender_name: 'Morty Smith',
-              content: 'Oh jeez',
-              timestamp_ms: timestamp('2019/10/31 16:23:42'),
-            },
-          ],
-        },
-      ],
-      container,
-    );
+    const fireUploadEvent = getFireUploadEventForContents(FILE_CONTENTS, container);
 
     expect(getByText('No Data')).toBeInTheDocument();
 
@@ -117,6 +117,67 @@ describe('App', () => {
       });
     });
   });
+
+  it('shows no senders, on upload shows senders with same colors as bars, and allows filtering', async () => {
+    mockBoundingRectSoChartWouldBeRendered();
+
+    const { getByText, queryAllByRole, container } = render(<App />);
+
+    const fireUploadEvent = getFireUploadEventForContents(FILE_CONTENTS, container);
+
+    expect(queryAllByRole('checkbox')).toHaveLength(0);
+
+    fireUploadEvent();
+
+    await waitFor(() => expect(queryAllByRole('checkbox')).toHaveLength(4));
+
+    const MORTY_MESSAGES = 2;
+    const RICK_MESSAGES = 2;
+    const MR_MEESEEKS_MESSAGES = 1;
+    const ALL_MESSAGES = MORTY_MESSAGES + RICK_MESSAGES + MR_MEESEEKS_MESSAGES;
+
+    const allFilter = getByText('All senders');
+
+    const mortyFilter = getByText('Morty Smith');
+    expect(barsWithFilterColor(mortyFilter, container)).toHaveLength(MORTY_MESSAGES);
+    const rickFilter = getByText('Rick Sanchez');
+    expect(barsWithFilterColor(rickFilter, container)).toHaveLength(RICK_MESSAGES);
+    const mrMeeseeksFilter = getByText('Mr. Meeseeks');
+    expect(barsWithFilterColor(mrMeeseeksFilter, container)).toHaveLength(MR_MEESEEKS_MESSAGES);
+
+    expect(getBars(container)).toHaveLength(ALL_MESSAGES);
+
+    fireEvent.click(rickFilter);
+    expect(getBars(container)).toHaveLength(ALL_MESSAGES - RICK_MESSAGES);
+    expect(barsWithFilterColor(rickFilter, container)).toHaveLength(0);
+
+    fireEvent.click(mortyFilter);
+    expect(getBars(container)).toHaveLength(ALL_MESSAGES - RICK_MESSAGES - MORTY_MESSAGES);
+    expect(barsWithFilterColor(mortyFilter, container)).toHaveLength(0);
+
+    fireEvent.click(mortyFilter);
+    expect(getBars(container)).toHaveLength(ALL_MESSAGES - RICK_MESSAGES);
+    expect(barsWithFilterColor(mortyFilter, container)).toHaveLength(MORTY_MESSAGES);
+
+    fireEvent.click(allFilter);
+    expect(getBars(container)).toHaveLength(ALL_MESSAGES);
+
+    fireEvent.click(allFilter);
+    expect(getBars(container)).toHaveLength(0);
+  });
+
+  function getBars(container: HTMLElement): SVGRectElement[] {
+    return Array.from(container.querySelectorAll('rect')).filter(isNotChartContainerRect);
+  }
+
+  function isNotChartContainerRect(rect: SVGRectElement): boolean {
+    return rect.getAttribute('fill') !== 'transparent';
+  }
+
+  function barsWithFilterColor(filter: HTMLElement, container: HTMLElement): SVGRectElement[] {
+    const color = (filter.previousElementSibling as HTMLElement).style.backgroundColor;
+    return getBars(container).filter(bar => bar.getAttribute('fill') === `#${rgbHex(color)}`);
+  }
 
   function getFireUploadEventForContents(
     contents: FileContent[],

@@ -34,19 +34,35 @@ export async function getData(files: File[]): Promise<Data> {
 }
 
 export const emptyData: Data = {
-  DAY: [],
-  WEEK: [],
-  MONTH: [],
-  YEAR: [],
+  senders: [],
+  messages: {
+    DAY: [],
+    WEEK: [],
+    MONTH: [],
+    YEAR: [],
+  },
 };
 
 function convertMessagesToData(messages: Message[]): Data {
+  const sortedMessages = sortMessagesByOldestFirst(messages);
+  const senders = getSendersByMostMessagesFirst(messages);
+
+  const convert = (unit: TimeUnit): DataForTimeUnit[] =>
+    convertMessagesToDataForTimeUnit(sortedMessages, unit, senders);
+
   return {
-    DAY: convertMessagesToDataForTimeUnit(messages, DAY),
-    WEEK: convertMessagesToDataForTimeUnit(messages, WEEK),
-    MONTH: convertMessagesToDataForTimeUnit(messages, MONTH),
-    YEAR: convertMessagesToDataForTimeUnit(messages, YEAR),
+    senders,
+    messages: {
+      DAY: convert(DAY),
+      WEEK: convert(WEEK),
+      MONTH: convert(MONTH),
+      YEAR: convert(YEAR),
+    },
   };
+}
+
+function sortMessagesByOldestFirst(messages: Message[]): Message[] {
+  return sortBy(messages, 'time');
 }
 
 async function getMessages(file: File): Promise<Message[]> {
@@ -85,26 +101,22 @@ function extractMessages({ messages }: FileContent): Message[] {
 function convertMessagesToDataForTimeUnit(
   messages: Message[],
   timeUnit: TimeUnit,
+  senders: Message['sender'][],
 ): DataForTimeUnit[] {
-  const messagesByOldestFirst = sortBy(messages, 'time');
-  const sendersByMostMessagesFirst = getSendersByMostMessagesFirst(messagesByOldestFirst);
+  return getTimesWithMessages(messages, timeUnit).map(({ time, messages: messagesForThatTime }) => {
+    const numberOfMessagesBySender = getNumberOfMessagesBySender(messagesForThatTime);
 
-  return getTimesWithMessages(messagesByOldestFirst, timeUnit).map(
-    ({ time, messages: messagesForThatTime }) => {
-      const numberOfMessagesBySender = getNumberOfMessagesBySender(messagesForThatTime);
-
-      return {
-        id: formatTime(Number(time), timeUnit),
-        ...sendersByMostMessagesFirst.reduce(
-          (result, sender) => ({
-            ...result,
-            [sender]: numberOfMessagesBySender[sender] || 0,
-          }),
-          {},
-        ),
-      };
-    },
-  );
+    return {
+      id: formatTime(Number(time), timeUnit),
+      ...senders.reduce(
+        (result, sender) => ({
+          ...result,
+          [sender]: numberOfMessagesBySender[sender] || 0,
+        }),
+        {},
+      ),
+    };
+  });
 }
 
 function getNumberOfMessagesBySender(messages: Message[]): Record<Message['sender'], number> {
