@@ -10,7 +10,7 @@ import './Upload.css';
 
 type UploadProps = {
   onComplete: (data: Data) => void;
-  style: CSSProperties;
+  style?: CSSProperties;
 };
 
 // TODO: Support uploading a directory, from where all messages_*.json files would be used

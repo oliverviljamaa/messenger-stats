@@ -5,6 +5,7 @@ import { emptyData } from './dataUtils';
 import { TimeUnit, Data } from './models';
 
 import Upload from './Upload';
+import InstructionsButton from './InstructionsButton';
 import TimeUnitRadio from './TimeUnitRadio';
 import Senders from './Senders';
 import EmptyState from './EmptyState';
@@ -27,6 +28,8 @@ const App: FC = () => {
 
       <div style={{ display: 'flex' }}>
         <div>
+          <InstructionsButton />
+
           <Upload
             onComplete={(newData): void => {
               setSelectedSenders(newData.senders);
@@ -52,8 +55,6 @@ const App: FC = () => {
             />
           )}
         </div>
-
-        {/* TODO: Add instructions drawer for how to download data and what to upload */}
 
         {/* TODO: Add keyword filtering */}
 
