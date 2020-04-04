@@ -166,6 +166,16 @@ describe('App', () => {
     expect(getBars(container)).toHaveLength(0);
   });
 
+  it('shows instructions on clicking "how does it work"', async () => {
+    const { getByText, queryByText } = render(<App />);
+
+    const button = getByText(/how does it work/i);
+
+    expect(queryByText(/request your data from facebook/i)).not.toBeInTheDocument();
+    fireEvent.click(button);
+    expect(queryByText(/request your data from facebook/i)).toBeInTheDocument();
+  });
+
   function getBars(container: HTMLElement): SVGRectElement[] {
     return Array.from(container.querySelectorAll('rect')).filter(isNotChartContainerRect);
   }
