@@ -1,5 +1,5 @@
 import React, { FC, useState } from 'react';
-import { Typography } from 'antd';
+import { Typography, Row, Col, Alert } from 'antd';
 
 import { emptyData } from './dataUtils';
 import { TimeUnit, Data } from './models';
@@ -26,50 +26,61 @@ const App: FC = () => {
     <main style={{ padding: 32 }}>
       <Title>Messenger stats</Title>
 
-      <div style={{ display: 'flex' }}>
-        <div>
-          <InstructionsButton />
-
-          <Upload
-            onComplete={(newData): void => {
-              setSelectedSenders(newData.senders);
-              setData(newData);
-            }}
-            style={{ marginBottom: 24 }}
+      <Row>
+        <Col xs={24} lg={0}>
+          <Alert
+            message="To use the visualization tool, please return to this page on a device with a bigger screen, such as your laptop or desktop computer."
+            type="warning"
           />
+        </Col>
 
-          <TimeUnitRadio
-            selected={selectedTimeUnit}
-            onSelect={setSelectedTimeUnit}
-            disabled={data === emptyData}
-            disabledUnits={getTimeUnitsToDisable(data)}
-            style={{ marginBottom: 24 }}
-          />
+        <Col xs={0} lg={24}>
+          <div style={{ display: 'flex' }}>
+            <div>
+              <InstructionsButton />
 
-          {senders.length > 0 && (
-            <Senders
-              senders={senders}
-              selected={selectedSenders}
-              onChange={setSelectedSenders}
-              colors={COLORS}
-            />
-          )}
-        </div>
+              <Upload
+                onComplete={(newData): void => {
+                  setSelectedSenders(newData.senders);
+                  setData(newData);
+                }}
+                style={{ marginBottom: 24 }}
+              />
 
-        {/* TODO: Add keyword filtering */}
+              <TimeUnitRadio
+                selected={selectedTimeUnit}
+                onSelect={setSelectedTimeUnit}
+                disabled={data === emptyData}
+                disabledUnits={getTimeUnitsToDisable(data)}
+                style={{ marginBottom: 24 }}
+              />
 
-        {/* TODO: Add chat title */}
+              {senders.length > 0 && (
+                <Senders
+                  senders={senders}
+                  selected={selectedSenders}
+                  onChange={setSelectedSenders}
+                  colors={COLORS}
+                />
+              )}
+            </div>
 
-        {/* TODO: Add loading state */}
+            {/* TODO: Add keyword filtering */}
 
-        <div style={{ flex: 1 }}>
-          {data === emptyData ? (
-            <EmptyState />
-          ) : (
-            <Chart senders={selectedSenders} data={dataForTimeUnit} colors={COLORS} />
-          )}
-        </div>
-      </div>
+            {/* TODO: Add chat title */}
+
+            {/* TODO: Add loading state */}
+
+            <div style={{ flex: 1 }}>
+              {data === emptyData ? (
+                <EmptyState />
+              ) : (
+                <Chart senders={selectedSenders} data={dataForTimeUnit} colors={COLORS} />
+              )}
+            </div>
+          </div>
+        </Col>
+      </Row>
     </main>
   );
 };

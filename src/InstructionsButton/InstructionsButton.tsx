@@ -19,7 +19,7 @@ const InstructionsButton: FC<ButtonProps> = ({ style }) => {
         title="How does it work"
         onClose={(): void => setIsDrawerOpen(false)}
         visible={isDrawerOpen}
-        width={480}
+        width={Math.min(window.innerWidth, 480)}
         footer={
           <div style={{ textAlign: 'center' }}>
             Made with{' '}
