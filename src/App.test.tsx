@@ -44,6 +44,7 @@ describe('App', () => {
 
   it('shows empty state and on upload, replaces it with correct columns and updates on time unit change', async () => {
     mockBoundingRectSoChartWouldBeRendered();
+    mockMatchMediaForRowsAndColsToWork();
 
     const { getByText, container } = render(<App />);
 
@@ -120,6 +121,7 @@ describe('App', () => {
 
   it('shows no senders, on upload shows senders with same colors as bars, and allows filtering', async () => {
     mockBoundingRectSoChartWouldBeRendered();
+    mockMatchMediaForRowsAndColsToWork();
 
     const { getByText, queryAllByRole, container } = render(<App />);
 
@@ -229,6 +231,22 @@ describe('App', () => {
       bottom: 0,
       left: 0,
       toJSON: jest.fn(),
+    });
+  }
+
+  function mockMatchMediaForRowsAndColsToWork(): void {
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: jest.fn().mockImplementation(query => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: jest.fn(), // deprecated
+        removeListener: jest.fn(), // deprecated
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn(),
+        dispatchEvent: jest.fn(),
+      })),
     });
   }
 });
