@@ -19,8 +19,8 @@ const App: FC = () => {
   const [selectedSenders, setSelectedSenders] = useState(data.senders);
   const [selectedTimeUnit, setSelectedTimeUnit] = useState(TimeUnit.MONTH);
 
-  const { senders, messages } = data;
-  const dataForTimeUnit = messages[selectedTimeUnit];
+  const { senders, numberOfMessages } = data;
+  const dataForTimeUnit = numberOfMessages[selectedTimeUnit];
 
   return (
     <main style={{ padding: 32 }}>
@@ -86,7 +86,7 @@ const App: FC = () => {
 };
 
 function getTimeUnitsToDisable(data: Data): TimeUnit[] {
-  return Object.values(TimeUnit).filter(unit => data.messages[unit].length > 500);
+  return Object.values(TimeUnit).filter(unit => data.numberOfMessages[unit].length > 500);
 }
 
 export default App;

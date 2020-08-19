@@ -35,7 +35,7 @@ export async function getData(files: File[]): Promise<Data> {
 
 export const emptyData: Data = {
   senders: [],
-  messages: {
+  numberOfMessages: {
     DAY: [],
     WEEK: [],
     MONTH: [],
@@ -52,7 +52,7 @@ function convertMessagesToData(messages: Message[]): Data {
 
   return {
     senders,
-    messages: {
+    numberOfMessages: {
       DAY: convert(DAY),
       WEEK: convert(WEEK),
       MONTH: convert(MONTH),
