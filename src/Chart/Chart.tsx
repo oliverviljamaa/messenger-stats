@@ -8,15 +8,15 @@ const MAX_TICKS = 20;
 type ChartProps = {
   senders: Message['sender'][];
   data: DataForTimeUnit[];
-  colors: string[];
+  colorMap: Record<Message['sender'], string>;
 };
 
-const Chart: FC<ChartProps> = ({ senders, data, colors }) => (
+const Chart: FC<ChartProps> = ({ senders, data, colorMap }) => (
   <div style={{ height: 640 }}>
     <ResponsiveBar
       data={data}
       keys={senders}
-      colors={colors}
+      colors={senders.map(sender => colorMap[sender])}
       margin={{ top: 48, right: 48, bottom: 96, left: 72 }}
       enableLabel={false}
       axisBottom={{

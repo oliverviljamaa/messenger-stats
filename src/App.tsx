@@ -1,8 +1,8 @@
-import React, { FC, useState } from 'react';
-import { Typography, Row, Col, Alert } from 'antd';
+import React, { FC, useState, useEffect } from 'react';
+import { Typography, Row, Col, Alert, Input } from 'antd';
 
-import { emptyData } from './dataUtils';
-import { TimeUnit, Data } from './models';
+import { convertMessagesToData, filterMessages } from './dataUtils';
+import { TimeUnit, Data, Message } from './models';
 
 import Upload from './Upload';
 import InstructionsButton from './InstructionsButton';
@@ -15,12 +15,24 @@ import COLORS from './COLORS';
 const { Title } = Typography;
 
 const App: FC = () => {
-  const [data, setData] = useState(emptyData);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [data, setData] = useState(convertMessagesToData(messages));
+  const [searchWord, setSearchWord] = useState('');
+  const [colorMap, setColorMap] = useState({});
   const [selectedSenders, setSelectedSenders] = useState(data.senders);
   const [selectedTimeUnit, setSelectedTimeUnit] = useState(TimeUnit.MONTH);
 
-  const { senders, messages } = data;
-  const dataForTimeUnit = messages[selectedTimeUnit];
+  const { senders, numberOfMessages } = data;
+  const hasData = senders.length > 0;
+  const dataForTimeUnit = numberOfMessages[selectedTimeUnit];
+
+  useEffect(() => {
+    const filteredMessages = searchWord ? filterMessages(messages, searchWord) : messages;
+    const newData = convertMessagesToData(filteredMessages);
+    setData(newData);
+    setSelectedSenders(newData.senders);
+    setColorMap(createColorMap(newData));
+  }, [messages, searchWord]);
 
   return (
     <main style={{ padding: 32 }}>
@@ -39,18 +51,21 @@ const App: FC = () => {
             <div>
               <InstructionsButton />
 
-              <Upload
-                onComplete={(newData): void => {
-                  setSelectedSenders(newData.senders);
-                  setData(newData);
-                }}
-                style={{ marginBottom: 24 }}
-              />
+              <Upload onComplete={setMessages} style={{ marginBottom: 24 }} />
+
+              <div style={{ marginBottom: 24 }}>
+                <Input.Search
+                  placeholder="Filter by keyword"
+                  aria-label="Filter by keyword"
+                  onSearch={(value): void => setSearchWord(value)}
+                  enterButton
+                />
+              </div>
 
               <TimeUnitRadio
                 selected={selectedTimeUnit}
                 onSelect={setSelectedTimeUnit}
-                disabled={data === emptyData}
+                disabled={!hasData}
                 disabledUnits={getTimeUnitsToDisable(data)}
                 style={{ marginBottom: 24 }}
               />
@@ -60,22 +75,20 @@ const App: FC = () => {
                   senders={senders}
                   selected={selectedSenders}
                   onChange={setSelectedSenders}
-                  colors={COLORS}
+                  colorMap={colorMap}
                 />
               )}
             </div>
-
-            {/* TODO: Add keyword filtering */}
 
             {/* TODO: Add chat title */}
 
             {/* TODO: Add loading state */}
 
             <div style={{ flex: 1 }}>
-              {data === emptyData ? (
-                <EmptyState />
+              {hasData ? (
+                <Chart senders={selectedSenders} data={dataForTimeUnit} colorMap={colorMap} />
               ) : (
-                <Chart senders={selectedSenders} data={dataForTimeUnit} colors={COLORS} />
+                <EmptyState />
               )}
             </div>
           </div>
@@ -85,8 +98,18 @@ const App: FC = () => {
   );
 };
 
+function createColorMap(newData: Data): Record<string, string> {
+  return newData.senders.reduce(
+    (result, sender, index) => ({
+      ...result,
+      [sender]: COLORS[index % COLORS.length],
+    }),
+    {},
+  );
+}
+
 function getTimeUnitsToDisable(data: Data): TimeUnit[] {
-  return Object.values(TimeUnit).filter(unit => data.messages[unit].length > 500);
+  return Object.values(TimeUnit).filter(unit => data.numberOfMessages[unit].length > 500);
 }
 
 export default App;

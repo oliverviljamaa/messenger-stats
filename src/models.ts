@@ -17,5 +17,5 @@ export type DataForTimeUnit = Pick<BarItemProps['data'], 'id'>;
 
 export type Data = {
   senders: Message['sender'][];
-  messages: Record<TimeUnit, DataForTimeUnit[]>;
+  numberOfMessages: Record<TimeUnit, DataForTimeUnit[]>;
 };

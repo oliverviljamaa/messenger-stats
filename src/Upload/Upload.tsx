@@ -1,15 +1,15 @@
 import React, { FC, CSSProperties } from 'react';
 import { Upload as AntUpload, Button } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
-
 import { RcFile } from 'antd/lib/upload';
-import { Data } from '../models';
-import { getData } from '../dataUtils';
+
+import { Message } from '../models';
+import { getMessages } from '../dataUtils';
 
 import './Upload.css';
 
 type UploadProps = {
-  onComplete: (data: Data) => void;
+  onComplete: (messages: Message[]) => void;
   style?: CSSProperties;
 };
 
@@ -19,8 +19,8 @@ const Upload: FC<UploadProps> = ({ onComplete, style }) => (
     <AntUpload
       beforeUpload={async (fileBeingProcessed, allFiles): Promise<void> => {
         if (isLastFile(fileBeingProcessed, allFiles)) {
-          const data = await getData(allFiles);
-          onComplete(data);
+          const messages = await getMessages(allFiles);
+          onComplete(messages);
         }
         return Promise.resolve();
       }}

@@ -26,24 +26,13 @@ export interface FileContent {
   messages: FileMessage[];
 }
 
-export async function getData(files: File[]): Promise<Data> {
-  const promisesForMessages = Array.from(files).map(getMessages);
+export async function getMessages(files: File[]): Promise<Message[]> {
+  const promisesForMessages = Array.from(files).map(getMessagesFromFile);
   const messages = (await Promise.all(promisesForMessages)).flat();
-
-  return convertMessagesToData(messages);
+  return messages;
 }
 
-export const emptyData: Data = {
-  senders: [],
-  messages: {
-    DAY: [],
-    WEEK: [],
-    MONTH: [],
-    YEAR: [],
-  },
-};
-
-function convertMessagesToData(messages: Message[]): Data {
+export function convertMessagesToData(messages: Message[]): Data {
   const sortedMessages = sortMessagesByOldestFirst(messages);
   const senders = getSendersByMostMessagesFirst(messages);
 
@@ -52,7 +41,7 @@ function convertMessagesToData(messages: Message[]): Data {
 
   return {
     senders,
-    messages: {
+    numberOfMessages: {
       DAY: convert(DAY),
       WEEK: convert(WEEK),
       MONTH: convert(MONTH),
@@ -61,11 +50,15 @@ function convertMessagesToData(messages: Message[]): Data {
   };
 }
 
+export function filterMessages(messages: Message[], word: string): Message[] {
+  return messages.filter(message => message.content?.toLowerCase().includes(word.toLowerCase()));
+}
+
 function sortMessagesByOldestFirst(messages: Message[]): Message[] {
   return sortBy(messages, 'time');
 }
 
-async function getMessages(file: File): Promise<Message[]> {
+async function getMessagesFromFile(file: File): Promise<Message[]> {
   const content = await readJsonObjectFile(file);
   return content ? extractMessages(content as FileContent) : [];
 }

@@ -1,5 +1,6 @@
 import React from 'react';
-import { render, fireEvent, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
+import { render, waitFor, waitForElementToBeRemoved, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import rgbHex from 'rgb-hex';
 
 import App from './App';
@@ -25,12 +26,12 @@ describe('App', () => {
       messages: [
         {
           sender_name: 'Rick Sanchez',
-          content: 'Hey',
+          content: 'Hey (burp)',
           timestamp_ms: timestamp('2019/11/01 02:25:12'),
         },
         {
           sender_name: 'Mr. Meeseeks',
-          content: 'Look at me',
+          content: 'Look at me (burp)',
           timestamp_ms: timestamp('2019/11/01 02:25:12'),
         },
         {
@@ -42,26 +43,26 @@ describe('App', () => {
     },
   ];
 
-  it('shows empty state and on upload, replaces it with correct columns and updates on time unit change', async () => {
+  beforeEach(() => {
     mockBoundingRectSoChartWouldBeRendered();
     mockMatchMediaForRowsAndColsToWork();
+  });
 
-    const { getByText, container } = render(<App />);
+  it('shows empty state and on upload, replaces it with correct columns and updates on time unit change', async () => {
+    const { container } = render(<App />);
 
-    const fireUploadEvent = getFireUploadEventForContents(FILE_CONTENTS, container);
+    expect(screen.getByText('No Data')).toBeInTheDocument();
 
-    expect(getByText('No Data')).toBeInTheDocument();
+    uploadFiles(container);
 
-    fireUploadEvent();
+    await waitForElementToBeRemoved(() => screen.getByText('No Data'));
 
-    await waitForElementToBeRemoved(() => getByText('No Data'));
+    expect(screen.getByText('Oct 2019')).toBeInTheDocument();
+    expect(screen.getByText('Nov 2019')).toBeInTheDocument();
+    expect(screen.getByText('Dec 2019')).toBeInTheDocument();
+    expect(screen.getByText('Jan 2020')).toBeInTheDocument();
 
-    expect(getByText('Oct 2019')).toBeInTheDocument();
-    expect(getByText('Nov 2019')).toBeInTheDocument();
-    expect(getByText('Dec 2019')).toBeInTheDocument();
-    expect(getByText('Jan 2020')).toBeInTheDocument();
-
-    fireEvent.click(getByText('DAY'));
+    userEvent.click(screen.getByText('DAY'));
 
     await waitFor(() => {
       [
@@ -87,11 +88,11 @@ describe('App', () => {
         '27/12/2019',
         '30/12/2019',
       ].forEach(text => {
-        expect(getByText(text)).toBeInTheDocument();
+        expect(screen.getByText(text)).toBeInTheDocument();
       });
     });
 
-    fireEvent.click(getByText('WEEK'));
+    userEvent.click(screen.getByText('WEEK'));
 
     await waitFor(() => {
       [
@@ -106,76 +107,98 @@ describe('App', () => {
         '23/12/2019 week',
         '30/12/2019 week',
       ].forEach(text => {
-        expect(getByText(text)).toBeInTheDocument();
+        expect(screen.getByText(text)).toBeInTheDocument();
       });
     });
 
-    fireEvent.click(getByText('YEAR'));
+    userEvent.click(screen.getByText('YEAR'));
 
     await waitFor(() => {
       ['2019', '2020'].forEach(text => {
-        expect(getByText(text)).toBeInTheDocument();
+        expect(screen.getByText(text)).toBeInTheDocument();
       });
     });
   });
 
   it('shows no senders, on upload shows senders with same colors as bars, and allows filtering', async () => {
-    mockBoundingRectSoChartWouldBeRendered();
-    mockMatchMediaForRowsAndColsToWork();
+    const { container } = render(<App />);
 
-    const { getByText, queryAllByRole, container } = render(<App />);
+    expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
 
-    const fireUploadEvent = getFireUploadEventForContents(FILE_CONTENTS, container);
+    uploadFiles(container);
 
-    expect(queryAllByRole('checkbox')).toHaveLength(0);
-
-    fireUploadEvent();
-
-    await waitFor(() => expect(queryAllByRole('checkbox')).toHaveLength(4));
+    await waitFor(() => expect(screen.queryAllByRole('checkbox')).toHaveLength(4));
 
     const MORTY_MESSAGES = 2;
     const RICK_MESSAGES = 2;
     const MR_MEESEEKS_MESSAGES = 1;
     const ALL_MESSAGES = MORTY_MESSAGES + RICK_MESSAGES + MR_MEESEEKS_MESSAGES;
 
-    const allFilter = getByText('All senders');
+    const allFilter = screen.getByText('All senders');
 
-    const mortyFilter = getByText('Morty Smith');
+    const mortyFilter = screen.getByText('Morty Smith');
     expect(barsWithFilterColor(mortyFilter, container)).toHaveLength(MORTY_MESSAGES);
-    const rickFilter = getByText('Rick Sanchez');
+    const rickFilter = screen.getByText('Rick Sanchez');
     expect(barsWithFilterColor(rickFilter, container)).toHaveLength(RICK_MESSAGES);
-    const mrMeeseeksFilter = getByText('Mr. Meeseeks');
+    const mrMeeseeksFilter = screen.getByText('Mr. Meeseeks');
     expect(barsWithFilterColor(mrMeeseeksFilter, container)).toHaveLength(MR_MEESEEKS_MESSAGES);
 
     expect(getBars(container)).toHaveLength(ALL_MESSAGES);
 
-    fireEvent.click(rickFilter);
+    userEvent.click(rickFilter);
     expect(getBars(container)).toHaveLength(ALL_MESSAGES - RICK_MESSAGES);
     expect(barsWithFilterColor(rickFilter, container)).toHaveLength(0);
 
-    fireEvent.click(mortyFilter);
+    userEvent.click(mortyFilter);
     expect(getBars(container)).toHaveLength(ALL_MESSAGES - RICK_MESSAGES - MORTY_MESSAGES);
     expect(barsWithFilterColor(mortyFilter, container)).toHaveLength(0);
 
-    fireEvent.click(mortyFilter);
+    userEvent.click(mortyFilter);
     expect(getBars(container)).toHaveLength(ALL_MESSAGES - RICK_MESSAGES);
     expect(barsWithFilterColor(mortyFilter, container)).toHaveLength(MORTY_MESSAGES);
 
-    fireEvent.click(allFilter);
+    userEvent.click(allFilter);
     expect(getBars(container)).toHaveLength(ALL_MESSAGES);
 
-    fireEvent.click(allFilter);
+    userEvent.click(allFilter);
     expect(getBars(container)).toHaveLength(0);
   });
 
+  it('allows filtering by keyword', async () => {
+    const { container } = render(<App />);
+
+    uploadFiles(container);
+
+    await waitFor(() => expect(getBars(container)).toHaveLength(5));
+
+    const filterInput = screen.getByRole('textbox', { name: /Filter/ });
+    const filterButton = screen.getByRole('button', { name: /search/ });
+
+    userEvent.type(filterInput, 'burp');
+    userEvent.click(filterButton);
+
+    await waitFor(() => expect(getBars(container)).toHaveLength(3));
+
+    expect(screen.queryByText('Morty Smith')).not.toBeInTheDocument();
+    const rickFilter = screen.getByText('Rick Sanchez');
+    expect(barsWithFilterColor(rickFilter, container)).toHaveLength(2);
+    const mrMeeseeksFilter = screen.getByText('Mr. Meeseeks');
+    expect(barsWithFilterColor(mrMeeseeksFilter, container)).toHaveLength(1);
+
+    userEvent.clear(filterInput);
+    userEvent.click(filterButton);
+
+    await waitFor(() => expect(getBars(container)).toHaveLength(5));
+  });
+
   it('shows instructions on clicking "how does it work"', async () => {
-    const { getByText, queryByText } = render(<App />);
+    render(<App />);
 
-    const button = getByText(/how does it work/i);
+    const button = screen.getByText(/how does it work/i);
 
-    expect(queryByText(/request your data from facebook/i)).not.toBeInTheDocument();
-    fireEvent.click(button);
-    expect(queryByText(/request your data from facebook/i)).toBeInTheDocument();
+    expect(screen.queryByText(/request your data from facebook/i)).not.toBeInTheDocument();
+    userEvent.click(button);
+    expect(screen.getByText(/request your data from facebook/i)).toBeInTheDocument();
   });
 
   function getBars(container: HTMLElement): SVGRectElement[] {
@@ -191,20 +214,14 @@ describe('App', () => {
     return getBars(container).filter(bar => bar.getAttribute('fill') === `#${rgbHex(color)}`);
   }
 
-  function getFireUploadEventForContents(
-    contents: FileContent[],
-    container: HTMLElement,
-  ): () => void {
+  function uploadFiles(container: HTMLElement): void {
     const uploadInput = container.querySelector('input[type="file"]');
-    const files = mapContentsToFiles(contents);
-    Object.defineProperty(uploadInput, 'files', { value: files });
+    const files = mapContentsToFiles(FILE_CONTENTS);
 
-    return (): void => {
-      // For TypeScript
-      if (uploadInput) {
-        fireEvent.change(uploadInput);
-      }
-    };
+    // For TypeScript
+    if (uploadInput) {
+      userEvent.upload(uploadInput, files);
+    }
   }
 
   function mapContentsToFiles(contents: FileContent[]): File[] {
