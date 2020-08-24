@@ -5,6 +5,7 @@ module.exports = {
     'prettier/@typescript-eslint',
     'plugin:import/typescript',
     'plugin:jest/all',
+    'plugin:react-hooks/recommended',
   ],
   plugins: ['react-hooks'],
   rules: {
