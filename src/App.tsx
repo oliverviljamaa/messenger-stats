@@ -13,7 +13,6 @@ import Chart from './Chart';
 import COLORS from './COLORS';
 
 const { Title } = Typography;
-const { Search } = Input;
 
 const App: FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -55,9 +54,12 @@ const App: FC = () => {
               <Upload onComplete={setMessages} style={{ marginBottom: 24 }} />
 
               <div style={{ marginBottom: 24 }}>
-                <Search
+                <Input.Search
                   placeholder="Filter by keyword"
+                  aria-label="Filter by keyword"
                   onSearch={(value): void => setSearchWord(value)}
+                  role="textbox"
+                  enterButton
                 />
               </div>
 

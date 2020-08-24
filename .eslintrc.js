@@ -21,6 +21,7 @@ module.exports = {
     }],
     '@typescript-eslint/no-unused-vars': 'error',
     'jest/prefer-expect-assertions': 0, // only useful in error tests
+    'jest/no-hooks': 0, // acceptable for setup and improves readability
     'react/prop-types': 0, // TypeScript does it for us
     'jest/lowercase-name': 0, // allow component names to be capitalised
     'import/extensions': [ // workaround while https://github.com/benmosher/eslint-plugin-import/issues/1615
