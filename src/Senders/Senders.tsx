@@ -9,10 +9,10 @@ type SendersProps = {
   senders: Sender[];
   selected: Sender[];
   onChange: (senders: Sender[]) => void;
-  colors: string[];
+  colorMap: Record<Sender, string>;
 };
 
-const Senders: FC<SendersProps> = ({ senders, selected, onChange, colors }) => {
+const Senders: FC<SendersProps> = ({ senders, selected, onChange, colorMap }) => {
   return (
     <div>
       <Checkbox
@@ -25,7 +25,7 @@ const Senders: FC<SendersProps> = ({ senders, selected, onChange, colors }) => {
 
       <Divider style={{ margin: '12px 0' }} />
 
-      {senders.map((sender, index) => (
+      {senders.map(sender => (
         <Fragment key={sender}>
           <Checkbox
             onChange={({ target: { checked } }): void =>
@@ -33,7 +33,7 @@ const Senders: FC<SendersProps> = ({ senders, selected, onChange, colors }) => {
             }
             checked={selected.includes(sender)}
           >
-            <Badge color={colors[index % colors.length]} text={sender} />
+            <Badge color={colorMap[sender]} text={sender} />
           </Checkbox>
           <br />
         </Fragment>
