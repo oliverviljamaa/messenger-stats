@@ -58,7 +58,6 @@ const App: FC = () => {
                   placeholder="Filter by keyword"
                   aria-label="Filter by keyword"
                   onSearch={(value): void => setSearchWord(value)}
-                  role="textbox"
                   enterButton
                 />
               </div>
