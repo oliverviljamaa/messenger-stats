@@ -1,5 +1,11 @@
 import React from 'react';
-import { render, fireEvent, waitFor, waitForElementToBeRemoved } from '@testing-library/react';
+import {
+  render,
+  fireEvent,
+  waitFor,
+  waitForElementToBeRemoved,
+  screen,
+} from '@testing-library/react';
 import rgbHex from 'rgb-hex';
 
 import App from './App';
@@ -46,22 +52,22 @@ describe('App', () => {
     mockBoundingRectSoChartWouldBeRendered();
     mockMatchMediaForRowsAndColsToWork();
 
-    const { getByText, container } = render(<App />);
+    const { container } = render(<App />);
 
     const fireUploadEvent = getFireUploadEventForContents(FILE_CONTENTS, container);
 
-    expect(getByText('No Data')).toBeInTheDocument();
+    expect(screen.getByText('No Data')).toBeInTheDocument();
 
     fireUploadEvent();
 
-    await waitForElementToBeRemoved(() => getByText('No Data'));
+    await waitForElementToBeRemoved(() => screen.getByText('No Data'));
 
-    expect(getByText('Oct 2019')).toBeInTheDocument();
-    expect(getByText('Nov 2019')).toBeInTheDocument();
-    expect(getByText('Dec 2019')).toBeInTheDocument();
-    expect(getByText('Jan 2020')).toBeInTheDocument();
+    expect(screen.getByText('Oct 2019')).toBeInTheDocument();
+    expect(screen.getByText('Nov 2019')).toBeInTheDocument();
+    expect(screen.getByText('Dec 2019')).toBeInTheDocument();
+    expect(screen.getByText('Jan 2020')).toBeInTheDocument();
 
-    fireEvent.click(getByText('DAY'));
+    fireEvent.click(screen.getByText('DAY'));
 
     await waitFor(() => {
       [
@@ -87,11 +93,11 @@ describe('App', () => {
         '27/12/2019',
         '30/12/2019',
       ].forEach(text => {
-        expect(getByText(text)).toBeInTheDocument();
+        expect(screen.getByText(text)).toBeInTheDocument();
       });
     });
 
-    fireEvent.click(getByText('WEEK'));
+    fireEvent.click(screen.getByText('WEEK'));
 
     await waitFor(() => {
       [
@@ -106,15 +112,15 @@ describe('App', () => {
         '23/12/2019 week',
         '30/12/2019 week',
       ].forEach(text => {
-        expect(getByText(text)).toBeInTheDocument();
+        expect(screen.getByText(text)).toBeInTheDocument();
       });
     });
 
-    fireEvent.click(getByText('YEAR'));
+    fireEvent.click(screen.getByText('YEAR'));
 
     await waitFor(() => {
       ['2019', '2020'].forEach(text => {
-        expect(getByText(text)).toBeInTheDocument();
+        expect(screen.getByText(text)).toBeInTheDocument();
       });
     });
   });
@@ -123,28 +129,28 @@ describe('App', () => {
     mockBoundingRectSoChartWouldBeRendered();
     mockMatchMediaForRowsAndColsToWork();
 
-    const { getByText, queryAllByRole, container } = render(<App />);
+    const { container } = render(<App />);
 
     const fireUploadEvent = getFireUploadEventForContents(FILE_CONTENTS, container);
 
-    expect(queryAllByRole('checkbox')).toHaveLength(0);
+    expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
 
     fireUploadEvent();
 
-    await waitFor(() => expect(queryAllByRole('checkbox')).toHaveLength(4));
+    await waitFor(() => expect(screen.queryAllByRole('checkbox')).toHaveLength(4));
 
     const MORTY_MESSAGES = 2;
     const RICK_MESSAGES = 2;
     const MR_MEESEEKS_MESSAGES = 1;
     const ALL_MESSAGES = MORTY_MESSAGES + RICK_MESSAGES + MR_MEESEEKS_MESSAGES;
 
-    const allFilter = getByText('All senders');
+    const allFilter = screen.getByText('All senders');
 
-    const mortyFilter = getByText('Morty Smith');
+    const mortyFilter = screen.getByText('Morty Smith');
     expect(barsWithFilterColor(mortyFilter, container)).toHaveLength(MORTY_MESSAGES);
-    const rickFilter = getByText('Rick Sanchez');
+    const rickFilter = screen.getByText('Rick Sanchez');
     expect(barsWithFilterColor(rickFilter, container)).toHaveLength(RICK_MESSAGES);
-    const mrMeeseeksFilter = getByText('Mr. Meeseeks');
+    const mrMeeseeksFilter = screen.getByText('Mr. Meeseeks');
     expect(barsWithFilterColor(mrMeeseeksFilter, container)).toHaveLength(MR_MEESEEKS_MESSAGES);
 
     expect(getBars(container)).toHaveLength(ALL_MESSAGES);
@@ -169,13 +175,13 @@ describe('App', () => {
   });
 
   it('shows instructions on clicking "how does it work"', async () => {
-    const { getByText, queryByText } = render(<App />);
+    render(<App />);
 
-    const button = getByText(/how does it work/i);
+    const button = screen.getByText(/how does it work/i);
 
-    expect(queryByText(/request your data from facebook/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/request your data from facebook/i)).not.toBeInTheDocument();
     fireEvent.click(button);
-    expect(queryByText(/request your data from facebook/i)).toBeInTheDocument();
+    expect(screen.getByText(/request your data from facebook/i)).toBeInTheDocument();
   });
 
   function getBars(container: HTMLElement): SVGRectElement[] {
