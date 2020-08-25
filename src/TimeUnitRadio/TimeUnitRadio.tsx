@@ -11,7 +11,6 @@ type TimeUnitRadioProps = {
   style: CSSProperties;
 };
 
-// TODO: Fix no time unit being selected on initialisation
 const TimeUnitRadio: FC<TimeUnitRadioProps> = ({
   selected,
   onSelect,
@@ -19,7 +18,7 @@ const TimeUnitRadio: FC<TimeUnitRadioProps> = ({
   disabledUnits,
   style,
 }) => (
-  <Radio.Group disabled={disabled} style={style}>
+  <Radio.Group disabled={disabled} style={style} defaultValue={selected}>
     {Object.values(TimeUnit).map(unit => (
       <Radio.Button
         value={unit}
